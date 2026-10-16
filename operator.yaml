@@ -4,7 +4,10 @@
 # so this file is the payload that action sends. Edit it here; it is the source of
 # truth for what the pipeline editor will show.
 name: ode-ablation-load-l2-rerun-1
-description: 24-hour-ahead forecast of hourly mean PV power (W), clear-sky-index model without weather input
+description: >
+  24-hour-ahead forecast of hourly mean PV power (W). Uses the day-ahead
+  irradiance forecast from open-meteo.com (needs outbound HTTPS) and falls back
+  to a clear-sky-index model without weather.
 image: ghcr.io/senergy-platform/ode-ablation-load-l2-rerun-1:latest
 
 # Public makes the operator visible to other users of the platform. Registration
@@ -32,3 +35,5 @@ config_values:
     type: float
   - name: longitude
     type: float
+  - name: use_weather
+    type: bool

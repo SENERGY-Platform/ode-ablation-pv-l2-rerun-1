@@ -5,8 +5,11 @@ and answers with the forecast for the hour 24 h later, stamped with that hour's
 time (result timestamp = message time + 24 h). The forecast only changes when
 an hour completes, so it is computed once per hour and reused.
 
-The hourly means live on the operator instance and are seeded from the model's
-own recent history, so the forecast keeps using fresh data between retrains.
+The forecast uses the day-ahead irradiance forecast for the target hour when
+it can get one (see training.WeatherSource) and the clear-sky-index model
+otherwise. The hourly means and the forecasts used live on the operator
+instance and are seeded from the model, so the forecast keeps using fresh data
+between retrains.
 """
 
 import datetime
@@ -17,7 +20,7 @@ from mlflow.pyfunc import PyFuncModel, PythonModel
 from operator_lib.util import Config, MLOperator, Selector
 from operator_lib.util.helpers import TrainMlflowLogger
 
-from training import LOOKBACK_DAYS, hour_index, train_model
+from training import RETAIN_DAYS, WeatherSource, hour_index, train_model
 
 
 HORIZON = datetime.timedelta(hours=24)
@@ -26,11 +29,14 @@ HORIZON = datetime.timedelta(hours=24)
 class CustomConfig(Config):
     # Retrain at most this often, in seconds.
     retrain_after_s = 86400
-    # Location of the PV system, for the clear-sky curve. The default is
-    # Leipzig, an assumption consistent with the observed sunrise times; set the
-    # real coordinates in the deployment config if they differ.
+    # Location of the PV system, for the clear-sky curve and the weather
+    # forecast. The default is Leipzig, an assumption consistent with the
+    # observed sunrise times; set the real coordinates if they differ.
     latitude = 51.34
     longitude = 12.37
+    # Fetch the day-ahead irradiance forecast from open-meteo.com. Off means the
+    # clear-sky-index model only.
+    use_weather = True
 
 
 class Operator(MLOperator):
@@ -48,9 +54,11 @@ class Operator(MLOperator):
         self._sums: typing.Dict[int, float] = {}
         self._counts: typing.Dict[int, int] = {}
         self._hourly: typing.Dict[int, float] = {}
+        self._ghi: typing.Dict[int, float] = {}
         self._current_hour: typing.Optional[int] = None
         self._cached_for: typing.Optional[int] = None
         self._cached_prediction: typing.Optional[float] = None
+        self._weather: typing.Optional[WeatherSource] = None
         super().init(*args, **kwargs)
 
     @staticmethod
@@ -62,24 +70,35 @@ class Operator(MLOperator):
         except AttributeError:
             return model
 
+    @staticmethod
+    def _truthy(value) -> bool:
+        return str(value).strip().lower() not in ("false", "0", "no", "off", "")
+
+    def _weather_source(self) -> typing.Optional[WeatherSource]:
+        if self._weather is None and self._truthy(self.config.use_weather):
+            self._weather = WeatherSource(float(self.config.latitude), float(self.config.longitude))
+        return self._weather
+
     def _seed(self, pm) -> None:
         """Take the model's history on first use and whenever the model changes."""
         if self._seeded_from == id(pm):
             return
         self._seeded_from = id(pm)
         for h, v in pm.hourly.items():
-            # Hours the stream has already measured win over the seed.
             if h not in self._counts:
                 self._hourly.setdefault(h, v)
+        for h, g in getattr(pm, "ghi", {}).items():
+            self._ghi.setdefault(h, g)
         self._cached_for = None
 
     def _close_hours(self, now_hour: int) -> None:
         """Move every accumulated hour before now_hour into the complete means."""
         for h in [h for h in self._sums if h < now_hour]:
             self._hourly[h] = self._sums.pop(h) / self._counts.pop(h)
-        horizon = now_hour - 24 * (LOOKBACK_DAYS + 3)
-        for h in [h for h in self._hourly if h < horizon]:
-            del self._hourly[h]
+        horizon = now_hour - 24 * RETAIN_DAYS
+        for store in (self._hourly, self._ghi):
+            for h in [h for h in store if h < horizon]:
+                del store[h]
 
     def infer(
         self,
@@ -111,7 +130,14 @@ class Operator(MLOperator):
         self._counts[now_hour] = self._counts.get(now_hour, 0) + 1
 
         if self._cached_for != now_hour:
-            self._cached_prediction = pm.forecast(self._hourly, now_hour)
+            target = now_hour + 24
+            source = self._weather_source()
+            if source is not None and target not in self._ghi:
+                g = source.ghi_for(target)
+                if g is not None:
+                    # Only the target hour is kept: the forecast as it was known now.
+                    self._ghi[target] = g
+            self._cached_prediction, _ = pm.forecast_combined(self._hourly, self._ghi, now_hour)
             self._cached_for = now_hour
 
         return timestamp + HORIZON, {"prediction": self._cached_prediction}, None

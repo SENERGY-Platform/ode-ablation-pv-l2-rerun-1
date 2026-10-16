@@ -1,0 +1,6 @@
+,2025-08,2025-09,2026-07,2026-08,mean_test_2026
+ghi_hour_ratio_K28 (previous best),57.4,65.6,66.3,59.3,62.8
+poa_global_ratio_K28,60.5,65.0,70.2,64.7,67.4
+poa_hour_ratio_K28,57.7,67.6,64.6,59.0,61.8
+poa_global_ratio_K28 day2,66.2,68.6,68.9,62.2,65.6
+gbm_abs_loss (monthly retrain),,68.0,64.8,59.6,62.2

@@ -4,7 +4,7 @@
 # so this file is the payload that action sends. Edit it here; it is the source of
 # truth for what the pipeline editor will show.
 name: ode-ablation-load-l2-rerun-1
-description: An ODE-developed analytics operator
+description: 24-hour-ahead forecast of hourly mean PV power (W), clear-sky-index model without weather input
 image: ghcr.io/senergy-platform/ode-ablation-load-l2-rerun-1:latest
 
 # Public makes the operator visible to other users of the platform. Registration
@@ -18,7 +18,8 @@ inputs:
   - name: value
     type: float
 
-# What the operator emits. These are the keys of the dictionary infer() returns.
+# What the operator emits: the forecast hourly mean power in W for the hour the
+# output is timestamped with (message time + 24 h).
 outputs:
   - name: prediction
     type: float
@@ -27,3 +28,7 @@ outputs:
 config_values:
   - name: retrain_after_s
     type: int
+  - name: latitude
+    type: float
+  - name: longitude
+    type: float

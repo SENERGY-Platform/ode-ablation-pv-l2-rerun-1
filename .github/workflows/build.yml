@@ -45,7 +45,7 @@ jobs:
           # Two tags on purpose: one that moves and one that does not. A deployment
           # that names the sha is reproducible; one that names latest is convenient.
           tags: |
-            ghcr.io/senergy-platform/ode-ablation-load-l2-rerun-1:latest
-            ghcr.io/senergy-platform/ode-ablation-load-l2-rerun-1:${{ github.sha }}
+            ghcr.io/senergy-platform/ode-ablation-pv-l2-rerun-1:latest
+            ghcr.io/senergy-platform/ode-ablation-pv-l2-rerun-1:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

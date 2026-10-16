@@ -3,12 +3,12 @@
 # ODE offers registration as an explicit action and never performs it on its own,
 # so this file is the payload that action sends. Edit it here; it is the source of
 # truth for what the pipeline editor will show.
-name: ode-ablation-load-l2-rerun-1
+name: ode-ablation-pv-l2-rerun-1
 description: >
   24-hour-ahead forecast of hourly mean PV power (W). Uses the day-ahead
   irradiance forecast from open-meteo.com (needs outbound HTTPS) and falls back
   to a clear-sky-index model without weather.
-image: ghcr.io/senergy-platform/ode-ablation-load-l2-rerun-1:latest
+image: ghcr.io/senergy-platform/ode-ablation-pv-l2-rerun-1:latest
 
 # Public makes the operator visible to other users of the platform. Registration
 # is a developer decision and so is this.

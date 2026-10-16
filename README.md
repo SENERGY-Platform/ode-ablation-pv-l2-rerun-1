@@ -1,4 +1,4 @@
-# ode-ablation-load-l2-rerun-1
+# ode-ablation-pv-l2-rerun-1
 
 ## Summary: 24-hour-ahead PV forecast, and how it was approached
 
@@ -132,7 +132,7 @@ Development Environment. Every file here is yours to change, including this one.
 | "pyproject.toml" | Dependencies, with Operator Lib pinned at "v1.8.1". |
 | "uv.lock" | The resolved dependencies. Written by the scaffold; refresh it yourself. See below. |
 | "Dockerfile" | The image. Built by CI; buildable by hand. |
-| ".github/workflows/build.yml" | Builds and pushes "ghcr.io/senergy-platform/ode-ablation-load-l2-rerun-1". Change the registry here. |
+| ".github/workflows/build.yml" | Builds and pushes "ghcr.io/senergy-platform/ode-ablation-pv-l2-rerun-1". Change the registry here. |
 | "operator.yaml" | What the analytics stack registers: inputs, outputs, config. |
 | "evaluation.yaml" | Your criteria for whether a run is good, plus what Operator Lib needs to score a test window itself. ODE never writes this. |
 
@@ -159,7 +159,7 @@ that it could not write one, the command above is the repair.
 
 ## Building by hand
 
-    docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) -t ghcr.io/senergy-platform/ode-ablation-load-l2-rerun-1:dev .
+    docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) -t ghcr.io/senergy-platform/ode-ablation-pv-l2-rerun-1:dev .
 
 ## The Operator Lib pin
 

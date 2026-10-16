@@ -48,7 +48,7 @@ def main() -> int:
     dep_config = util.DeploymentConfig()
     config_json = json.loads(dep_config.config)
     opr_config = util.OperatorConfig(config_json)
-    util.init_logger(opr_config.config.logger_level, "SENERGY-Platform/ode-ablation-load-l2-rerun-1")
+    util.init_logger(opr_config.config.logger_level, "SENERGY-Platform/ode-ablation-pv-l2-rerun-1")
 
     operator = Operator()
 

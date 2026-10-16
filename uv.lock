@@ -819,7 +819,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ode-ablation-load-l2-rerun-1"
+name = "ode-ablation-pv-l2-rerun-1"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

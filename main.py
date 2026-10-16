@@ -12,7 +12,7 @@ from operator_lib.operator_lib import OperatorLib
 if __name__ == "__main__":
     OperatorLib(
         Operator(),
-        name="SENERGY-Platform/ode-ablation-load-l2-rerun-1",
+        name="SENERGY-Platform/ode-ablation-pv-l2-rerun-1",
         # Written by the Dockerfile from the build's commit, so a running operator
         # can say which source it is (§5.11 item 7).
         git_info_file="git_commit",

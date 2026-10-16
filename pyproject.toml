@@ -1,5 +1,5 @@
 [project]
-name = "ode-ablation-load-l2-rerun-1"
+name = "ode-ablation-pv-l2-rerun-1"
 version = "0.1.0"
 # The minor series is pinned rather than left as a floor. uv resolves the driver's
 # environment on the Ray head and each worker's on its own node, and a floor lets

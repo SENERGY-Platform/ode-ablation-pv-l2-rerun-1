@@ -22,10 +22,12 @@ inputs:
     type: float
 
 # What the operator emits: the forecast hourly mean power in W for the hour the
-# output is timestamped with (message time + 24 h).
+# output is timestamped with (message time + 24 h), and which forecaster made it.
 outputs:
   - name: prediction
     type: float
+  - name: source
+    type: string
 
 # Deployment configuration, matching CustomConfig in op.py.
 config_values:

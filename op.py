@@ -7,9 +7,9 @@ an hour completes, so it is computed once per hour and reused.
 
 The forecast uses the day-ahead irradiance forecast for the target hour when
 it can get one (see training.WeatherSource) and the clear-sky-index model
-otherwise. The hourly means and the forecasts used live on the operator
-instance and are seeded from the model, so the forecast keeps using fresh data
-between retrains.
+otherwise; the output says which in "source". The hourly means and the
+forecasts used live on the operator instance and are seeded from the model, so
+the forecast keeps using fresh data between retrains.
 """
 
 import datetime
@@ -58,6 +58,7 @@ class Operator(MLOperator):
         self._current_hour: typing.Optional[int] = None
         self._cached_for: typing.Optional[int] = None
         self._cached_prediction: typing.Optional[float] = None
+        self._cached_source: typing.Optional[str] = None
         self._weather: typing.Optional[WeatherSource] = None
         super().init(*args, **kwargs)
 
@@ -137,10 +138,15 @@ class Operator(MLOperator):
                 if g is not None:
                     # Only the target hour is kept: the forecast as it was known now.
                     self._ghi[target] = g
-            self._cached_prediction, _ = pm.forecast_combined(self._hourly, self._ghi, now_hour)
+            self._cached_prediction, self._cached_source = pm.forecast_combined(
+                self._hourly, self._ghi, now_hour)
             self._cached_for = now_hour
 
-        return timestamp + HORIZON, {"prediction": self._cached_prediction}, None
+        return timestamp + HORIZON, {
+            "prediction": self._cached_prediction,
+            # "weather" or "clear_sky": which forecaster produced this value.
+            "source": self._cached_source,
+        }, None
 
     def train(
         self, model: typing.Optional[PyFuncModel], logger: TrainMlflowLogger
